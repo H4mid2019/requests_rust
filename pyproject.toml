@@ -1,0 +1,22 @@
+[build-system]
+requires = ["maturin>=1.5,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "requests_rust"
+description = "A simple HTTP/S client for Python written in rust"
+authors = [
+  { name="Hamid", email="hamid@darabi.website" },
+]
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Rust",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+]
+dynamic = ["version"]
+[tool.maturin]
+features = ["pyo3/extension-module"]
+[project.urls]
+Homepage = "https://github.com/H4mid2019/requests_rust"
+Issues = "https://github.com/H4mid2019/requests_rust/issues"
