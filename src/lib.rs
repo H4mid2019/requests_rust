@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, time::Duration};
 use reqwest::blocking::Client;
 use pyo3::prelude::*;
 use pythonize::pythonize;
@@ -6,11 +6,13 @@ use pyo3::types::PyDict;
 
 
 #[pyfunction]
-fn send_request(_py: Python, method: String, url: String, data: Option<PyObject>) -> Py<PyAny> {
-    let client = Client::new();
+fn send_request(_py: Python, method: String, url: String, timeout: Option<u64>, data: Option<PyObject>) -> Py<PyAny> {
+    let timeout_secs = timeout.unwrap_or(0);
+
+    let client = Client::builder().timeout(Duration::from_secs(timeout_secs)).build().unwrap();
 
     return Python::with_gil(|py| {
-        let response = match method.as_str() {
+        let response = match method.as_str().to_uppercase().as_str() {
             "GET" => client.get(url).send(),
             "POST" => {
                 let data = data.unwrap().extract::<HashMap<String, String>>(py).unwrap();
@@ -25,7 +27,8 @@ fn send_request(_py: Python, method: String, url: String, data: Option<PyObject>
                 client.patch(url).json(&data).send()
             },
             "DELETE" => client.delete(url).send(),
-            _ => panic!("Invalid method")
+            "HEAD" => client.head(url).send(),
+            _ => { return py.None()}
         };
 
         match response {
