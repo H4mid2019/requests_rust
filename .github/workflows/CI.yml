@@ -18,13 +18,11 @@ permissions:
   contents: read
 
 jobs:
-  linux:
+  cleanup:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        target: [x86_64, x86, aarch64, armv7]
     steps:
       - name: Cleanup
+        if: github.event_name == 'pull_request' && github.event.action == 'closed'
         run: |
           gh extension install actions/gh-actions-cache
 
@@ -43,17 +41,33 @@ jobs:
           GH_TOKEN: ${{ secrets.GIT_TOKEN }}
           REPO: ${{ github.repository }}
           BRANCH: main
+  linux:
+    runs-on: ubuntu-latest
+    needs: cleanup
+    strategy:
+      matrix:
+        target: [x86_64, aarch64, armv7]
+    steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
+          architecture: 'x64'
       - run: sudo apt-get update && sudo apt-get install pkg-config libssl-dev clang -y
       - uses: dtolnay/rust-toolchain@stable
-      - name: Build wheels - x86_64
+      - name: Build wheels - ${{ matrix.target }}
         uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.target }}
-          args: --release --out dist --find-interpreter
+          args: --release --out dist -i python3.11
+          before-script-linux: |
+            sudo apt-get update && sudo apt-get install pkg-config libssl-dev clang -y
+            if [ ${{ matrix.target }} != "x86_64" ]; then              
+              sudo apt-get install -y gcc-arm-linux-gnueabihf
+              export CARGO_TARGET_ARMV7_UNKNOWN_LINUX_GNUEABIHF_LINKER=arm-linux-gnueabihf-gcc
+              export CC_armv7_unknown_linux_gnueabihf=arm-linux-gnueabihf-gcc
+              export CXX_armv7_unknown_linux_gnueabihf=arm-linux-gnueabihf-g++
+            fi
       - name: Install x86_64 Build Dependencies
         run: sudo apt-get update && sudo apt-get install pkg-config libssl-dev clang -y
       - name: Upload wheels
@@ -64,6 +78,7 @@ jobs:
 
   windows:
     runs-on: windows-latest
+    needs: cleanup
     strategy:
       matrix:
         target: [x64, x86]
@@ -73,7 +88,7 @@ jobs:
         with:
           python-version: '3.11'
           architecture: ${{ matrix.target }}
-      - name: Build wheels
+      - name: Build wheels - ${{ matrix.target }}
         uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.target }}
@@ -87,6 +102,7 @@ jobs:
 
   macos:
     runs-on: macos-latest
+    needs: cleanup
     strategy:
       matrix:
         target: [x86_64, aarch64]
