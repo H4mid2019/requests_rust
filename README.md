@@ -7,6 +7,15 @@ it's a POC for a library in Python that sends requests and gets JSON responses w
 
 __it's a public repo, exist on pypi and the name on pypi is requests-rust.__
 
+## Prerequisites
+
+- python3.11
+- pip
+- wheel
+- setuptools
+- Linux[x86_64]/ windows[x86, x64] / Mac[x86_64, aarch64]
+
+
 ## Features
 
 - written in rust
