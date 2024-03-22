@@ -46,13 +46,13 @@ jobs:
     needs: cleanup
     strategy:
       matrix:
-        target: ["x86_64", "aarch64", "armv7"]
+        target: ["x86_64"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - run: sudo apt-get update && sudo apt-get install pkg-config libssl-dev clang -y
+      - run: sudo apt-get update && sudo apt-get install pkg-config libssl-dev clang libudev-dev perl librust-openssl-sys-dev build-essential -y
       - uses: dtolnay/rust-toolchain@stable
       - name: Build wheels - ${{ matrix.target }}
         uses: PyO3/maturin-action@v1
@@ -61,20 +61,14 @@ jobs:
           args: --release --out dist -i python3.11
           before-script-linux: |
             if [ ${{ matrix.target }} != "x86_64" ]; then  
-              sudo openssl version -a || echo "--------------OpenSSL not found"
-              sudo find / -type f -name "opensslconf.h" || echo "--------------opensslconf.h not found"
-              sudo echo "--------------opensslconf.h copied to /usr/include/openssl/"
-              sudo find / -type f -name "opensslv.h" || echo "--------------opensslv.h not found"
-              sudo echo "--------------opensslv.h found"
+              sudo apt-get install -y gcc-aarch64-linux-gnu gcc-arm-linux-gnueabihf
+              export CARGO_TARGET_ARMV7_UNKNOWN_LINUX_GNUEABIHF_LINKER=arm-linux-gnueabihf-gcc
+              export CC_armv7_unknown_linux_gnueabihf=arm-linux-gnueabihf-gcc
+              export CXX_armv7_unknown_linux_gnueabihf=arm-linux-gnueabihf-g++
             else
               sudo apt-get update && sudo apt-get install pkg-config libssl-dev clang libudev-dev perl librust-openssl-sys-dev build-essential -y
             fi
-      - name: Setup upterm session
-        if: ${{ failure() }}
-        uses: lhotari/action-upterm@v1
-        with:
-          wait-timeout-minutes: 5
-          limit-access-to-actor: true
+
       - name: Install x86_64 Build Dependencies
         run: sudo apt-get update && sudo apt-get install pkg-config libssl-dev clang -y
       - name: Upload wheels
@@ -85,7 +79,7 @@ jobs:
 
   windows:
     runs-on: windows-latest
-    needs: [cleanup, linux]
+    needs: [cleanup]
     strategy:
       matrix:
         target: [x64, x86]
@@ -109,7 +103,7 @@ jobs:
 
   macos:
     runs-on: macos-latest
-    needs: [cleanup, linux]
+    needs: [cleanup]
     strategy:
       matrix:
         target: [x86_64, aarch64]
@@ -148,7 +142,7 @@ jobs:
   release:
     name: Release
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/heads/main')
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' 
     needs: [linux, windows, macos, sdist]
     steps:
       - uses: actions/download-artifact@v4
