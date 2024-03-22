@@ -66,14 +66,20 @@ jobs:
           args: --release --out dist -i python3.11
           before-script-linux: |
             if [ ${{ matrix.target }} != "x86_64" ]; then  
+              echo "Installing cross-compilation dependencies NON x86_64"
               sudo apt-get install -y gcc-aarch64-linux-gnu gcc-arm-linux-gnueabihf
               export CARGO_TARGET_ARMV7_UNKNOWN_LINUX_GNUEABIHF_LINKER=arm-linux-gnueabihf-gcc
               export CC_armv7_unknown_linux_gnueabihf=arm-linux-gnueabihf-gcc
               export CXX_armv7_unknown_linux_gnueabihf=arm-linux-gnueabihf-g++
             else
+              echo "Installing ----------------------------- x86_64"
               sudo apt-get update && sudo apt-get install pkg-config libssl-dev clang libudev-dev perl librust-openssl-sys-dev build-essential -y
             fi
-
+      - name: Setup upterm session
+        if: ${{ failure() }}
+        uses: lhotari/action-upterm@v1
+        with:
+          limit-access-to-actor: true
       - name: Install x86_64 Build Dependencies
         run: sudo apt-get update && sudo apt-get install pkg-config libssl-dev clang -y
       - name: Upload wheels
