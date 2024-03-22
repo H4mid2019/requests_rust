@@ -61,14 +61,11 @@ jobs:
           target: ${{ matrix.target }}
           args: --release --out dist -i python3.11
           before-script-linux: |
-            sudo apt-get update && sudo apt-get install pkg-config libssl-dev clang libudev-dev librust-openssl-sys-dev build-essential -y
             if [ ${{ matrix.target }} != "x86_64" ]; then  
-              sudo find -type f -name "opensslconf.h"
-              sudo echo "--------------opensslconf.h found"          
-              sudo apt-get install -y gcc-aarch64-linux-gnu gcc-arm-linux-gnueabihf
-              export CARGO_TARGET_ARMV7_UNKNOWN_LINUX_GNUEABIHF_LINKER=arm-linux-gnueabihf-gcc
-              export CC_armv7_unknown_linux_gnueabihf=arm-linux-gnueabihf-gcc
-              export CXX_armv7_unknown_linux_gnueabihf=arm-linux-gnueabihf-g++
+              sudo find -type f -name "opensslconf.h" -exec cp {} /usr/include/openssl/ \; || echo "--------------opensslconf.h not found"
+                       
+            else
+              sudo apt-get update && sudo apt-get install pkg-config libssl-dev clang libudev-dev librust-openssl-sys-dev build-essential -y
             fi
       - name: Install x86_64 Build Dependencies
         run: sudo apt-get update && sudo apt-get install pkg-config libssl-dev clang -y
@@ -80,7 +77,7 @@ jobs:
 
   windows:
     runs-on: windows-latest
-    needs: cleanup
+    needs: [cleanup, linux]
     strategy:
       matrix:
         target: [x64, x86]
@@ -104,7 +101,7 @@ jobs:
 
   macos:
     runs-on: macos-latest
-    needs: cleanup
+    needs: [cleanup, linux]
     strategy:
       matrix:
         target: [x86_64, aarch64]
