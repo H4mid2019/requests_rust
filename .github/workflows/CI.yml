@@ -46,7 +46,7 @@ jobs:
     needs: cleanup
     strategy:
       matrix:
-        target: [x86_64, aarch64, armv7]
+        target: ["x86_64", "aarch64", "armv7"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -63,9 +63,9 @@ jobs:
           before-script-linux: |
             if [ ${{ matrix.target }} != "x86_64" ]; then  
               sudo openssl version -a || echo "--------------OpenSSL not found"
-              sudo find / -type f -name "opensslconf.h"; || echo "--------------opensslconf.h not found"
+              sudo find / -type f -name "opensslconf.h" || echo "--------------opensslconf.h not found"
               sudo echo "--------------opensslconf.h copied to /usr/include/openssl/"
-              sudo find / -type f -name "opensslv.h"; || echo "--------------opensslv.h not found"
+              sudo find / -type f -name "opensslv.h" || echo "--------------opensslv.h not found"
               sudo echo "--------------opensslv.h found"
             else
               sudo apt-get update && sudo apt-get install pkg-config libssl-dev clang libudev-dev perl librust-openssl-sys-dev build-essential -y
