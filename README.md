@@ -5,7 +5,7 @@
 
 it's a POC for a library in Python that sends requests and gets JSON responses written in Rust.
 
-__it's a public repo, exist on pypi.__
+__it's a public repo, exist on pypi and the name on pypi is requests-rust.__
 
 ## Features
 
