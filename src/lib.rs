@@ -53,7 +53,7 @@ fn send_request(_py: Python, method: String, url: String, timeout: Option<u64>, 
 
 /// A Python module implemented in Rust.
 #[pymodule]
-fn http_requests(_py: Python, m: &PyModule) -> PyResult<()> {
+fn requests_rust(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(send_request, m)?)?;
     Ok(())
 }

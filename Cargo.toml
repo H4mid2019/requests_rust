@@ -1,11 +1,11 @@
 [package]
-name = "http_requests"
+name = "requests_rust"
 version = "0.1.2"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [lib]
-name = "http_requests"
+name = "requests_rust"
 crate-type = ["cdylib"]
 path = "src/lib.rs"
 

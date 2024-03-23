@@ -39,7 +39,7 @@ send_request(METHOD, URL, [Optional]TIMEOUT, [Optional]DATA(as dict))
 
 
 ```
-from http_requests import send_request
+from requests_rust import send_request
 res = send_request('GET', 'http://127.0.0.1:3000/')
 print(res)
 ```
@@ -49,7 +49,7 @@ it supports these methods:  `GET`, `POST`, `PATCH`, `PUT`, `DELETE`, `HEAD`
 - if call it with not define method it returns None
   
 ```
-from http_requests import send_request
+from requests_rust import send_request
 res = send_request('TEST', 'http://127.0.0.1:3000/')
 print(res)
 ```
